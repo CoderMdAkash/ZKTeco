@@ -3,11 +3,11 @@
 [![Issues](https://img.shields.io/github/issues/raihanafroz/zkteco?style=flat-square)](https://github.com/raihanafroz/zkteco/issues)
 [![Forks](https://img.shields.io/github/forks/raihanafroz/zkteco?style=flat-square)](https://github.com/raihanafroz/zkteco/network/members)
 [![Stars](https://img.shields.io/github/stars/raihanafroz/zkteco?style=flat-square)](https://github.com/raihanafroz/zkteco/stargazers)
-[![Total Downloads](https://img.shields.io/packagist/dt/akash/zkteco?style=flat-square)](https://packagist.org/packages/akash/zkteco)
-[![License](https://poser.pugx.org/akash/zkteco/license.svg)](https://packagist.org/packages/akash/zkteco)
+[![Total Downloads](https://img.shields.io/packagist/dt/coderakash/zkteco?style=flat-square)](https://packagist.org/packages/coderakash/zkteco)
+[![License](https://poser.pugx.org/coderakash/zkteco/license.svg)](https://packagist.org/packages/coderakash/zkteco)
 
 
-The `akash/zkteco` package provides easy to use functions to ZKTeco Device activities.
+The `coderakash/zkteco` package provides easy to use functions to ZKTeco Device activities.
 
 __Requires:__  **Laravel** >= **6.0**
 
@@ -17,7 +17,7 @@ __License:__ MIT or later
 You can install the package via composer:
 
 ``` bash
-composer require akash/zkteco
+composer require coderakash/zkteco
 ```
 The package will automatically register itself.
 
