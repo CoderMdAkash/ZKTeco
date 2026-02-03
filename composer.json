@@ -1,12 +1,12 @@
 {
-    "name": "rats/zkteco",
+    "name": "akash/zkteco",
     "description": "ZKTeco Laravel Library",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Raihan Afroz",
-            "email": "raihanafroz9@gmail.com"
+            "name": "Md Akash",
+            "email": "akash904069@gmail.com"
         }
     ],
     "autoload": {
