@@ -2,8 +2,7 @@
 
 namespace Rats\Zkteco\Lib;
 
-use ErrorException;
-use Exception;
+use RuntimeException;
 use Rats\Zkteco\Lib\Helper\Attendance;
 use Rats\Zkteco\Lib\Helper\Device;
 use Rats\Zkteco\Lib\Helper\Face;
@@ -40,11 +39,21 @@ class ZKTeco{
     $this->_ip = $ip;
     $this->_port = $port;
 
-    $this->_zkclient = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    $this->_zkclient = @socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    if ($this->_zkclient === false) {
+      throw new RuntimeException('Unable to create UDP socket: ' . socket_strerror(socket_last_error()));
+    }
 
     $timeout = array('sec' => 60, 'usec' => 500000);
-    socket_set_option($this->_zkclient, SOL_SOCKET, SO_RCVTIMEO, $timeout);
+    @socket_set_option($this->_zkclient, SOL_SOCKET, SO_RCVTIMEO, $timeout);
 
+  }
+
+  public function __destruct()
+  {
+    if ($this->_zkclient) {
+      @socket_close($this->_zkclient);
+    }
   }
 
   /**
@@ -60,33 +69,67 @@ class ZKTeco{
     $chksum = 0;
     $session_id = $this->_session_id;
 
-    $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->_data_recv, 0, 8));
-    $reply_id = hexdec($u['h8'] . $u['h7']);
+    $reply_id = $this->getReplyId();
 
     $buf = Util::createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-
-    socket_sendto($this->_zkclient, $buf, strlen($buf), 0, $this->_ip, $this->_port);
-
-    try {
-      @socket_recvfrom($this->_zkclient, $this->_data_recv, 1024, 0, $this->_ip, $this->_port);
-
-      $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->_data_recv, 0, 8));
-
-      $ret = false;
-      $session = hexdec($u['h6'] . $u['h5']);
-
-      if ($type === Util::COMMAND_TYPE_GENERAL && $session_id === $session) {
-        $ret = substr($this->_data_recv, 8);
-      } else if ($type === Util::COMMAND_TYPE_DATA && !empty($session)) {
-        $ret = $session;
-      }
-
-      return $ret;
-    } catch (ErrorException $e) {
-      return false;
-    } catch (Exception $e) {
+    if (!$this->sendCommand($buf)) {
       return false;
     }
+
+    if (!$this->receiveResponse()) {
+      return false;
+    }
+
+    $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->_data_recv, 0, 8));
+    if (!is_array($u)) {
+      return false;
+    }
+
+    $ret = false;
+    $session = hexdec($u['h6'] . $u['h5']);
+
+    if ($type === Util::COMMAND_TYPE_GENERAL && $session_id === $session) {
+      $ret = substr($this->_data_recv, 8);
+    } else if ($type === Util::COMMAND_TYPE_DATA && !empty($session)) {
+      $ret = $session;
+    }
+
+    return $ret;
+  }
+
+  /**
+   * @return int
+   */
+  private function getReplyId()
+  {
+    if (strlen($this->_data_recv) < 8) {
+      return 0;
+    }
+
+    $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->_data_recv, 0, 8));
+    if (!is_array($u)) {
+      return 0;
+    }
+
+    return hexdec($u['h8'] . $u['h7']);
+  }
+
+  /**
+   * @param string $buf
+   * @return bool
+   */
+  private function sendCommand($buf)
+  {
+    return socket_sendto($this->_zkclient, $buf, strlen($buf), 0, $this->_ip, $this->_port) !== false;
+  }
+
+  /**
+   * @return bool
+   */
+  private function receiveResponse()
+  {
+    $bytes = @socket_recvfrom($this->_zkclient, $this->_data_recv, 1024, 0, $this->_ip, $this->_port);
+    return $bytes !== false && $bytes > 0;
   }
 
   /**

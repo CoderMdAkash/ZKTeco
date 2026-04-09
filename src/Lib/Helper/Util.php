@@ -108,22 +108,24 @@ class Util
    */
   static public function decodeTime($t)
   {
+    $t = (int)$t;
+
     $second = $t % 60;
-    $t = $t / 60;
+    $t = intdiv($t, 60);
 
     $minute = $t % 60;
-    $t = $t / 60;
+    $t = intdiv($t, 60);
 
     $hour = $t % 24;
-    $t = $t / 24;
+    $t = intdiv($t, 24);
 
     $day = $t % 31 + 1;
-    $t = $t / 31;
+    $t = intdiv($t, 31);
 
     $month = $t % 12 + 1;
-    $t = $t / 12;
+    $t = intdiv($t, 12);
 
-    $year = floor($t + 2000);
+    $year = $t + 2000;
 
     $d = date('Y-m-d H:i:s', strtotime(
       $year . '-' . $month . '-' . $day . ' ' . $hour . ':' . $minute . ':' . $second
@@ -138,11 +140,19 @@ class Util
    */
   static public function reverseHex($hex)
   {
+    $hex = (string)$hex;
+    if ($hex === '') {
+      return '';
+    }
+
+    if (strlen($hex) % 2 !== 0) {
+      $hex = '0' . $hex;
+    }
+
     $tmp = '';
 
-    for ($i = strlen($hex); $i >= 0; $i--) {
+    for ($i = strlen($hex) - 2; $i >= 0; $i -= 2) {
       $tmp .= substr($hex, $i, 2);
-      $i--;
     }
 
     return $tmp;
@@ -415,6 +425,10 @@ class Util
     } else {
       $dir = dirname(dirname(__FILE__));
       $log = $dir . '/logs/error.log';
+    }
+    $logDir = dirname($log);
+    if (!is_dir($logDir)) {
+      @mkdir($logDir, 0777, true);
     }
 
     $row = '<' . $self->_ip . '> [' . date('d.m.Y H:i:s') . '] ';

@@ -1,8 +1,7 @@
 <?php
 
-namespace Rats\Zkteco\Lib\Helper;;
+namespace Rats\Zkteco\Lib\Helper;
 
-use Rats\Zkteco\Lib\Helper\Util;
 use Rats\Zkteco\Lib\ZKTeco;
 
 class Version

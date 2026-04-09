@@ -205,7 +205,7 @@ You have to enable your php socket if it is not enable.
 //    parameter string $t Format: "Y-m-d H:i:s"
 //    return bool/mixed
 
-    $zk->setTime(); 
+    $zk->setTime('2026-04-09 12:00:00'); 
 ```
 
 * __Get Users__ 
@@ -245,7 +245,7 @@ You have to enable your php socket if it is not enable.
 //    remove all users
 //    return bool|mixed
 
-    $zk->clearAdmin(); 
+    $zk->clearUsers(); 
 ```
 
 * __Remove A User__ 

@@ -20,8 +20,7 @@ class Fingerprint
         $data = [];
         //fingers of the hands
         for ($i = 0; $i <= 9; $i++) {
-          $finger = new Fingerprint();
-            $tmp = $finger->_getFinger($self, $uid, $i);
+            $tmp = self::_getFinger($self, $uid, $i);
             if ($tmp['size'] > 0) {
                 $data[$i] = $tmp['tpl'];
             }
@@ -37,7 +36,7 @@ class Fingerprint
      * @param integer $finger Finger ID (0-9)
      * @return array
      */
-    private function _getFinger(ZKTeco $self, $uid, $finger)
+    private static function _getFinger(ZKTeco $self, $uid, $finger)
     {
         $command = Util::CMD_USER_TEMP_RRQ;
         $byte1 = chr((int)($uid % 256));
@@ -60,7 +59,7 @@ class Fingerprint
             $templateSize = strlen($data);
             $prefix = chr($templateSize % 256) . chr(round($templateSize / 256)) . $byte1 . $byte2 . chr($finger) . chr(1);
             $data = $prefix . $data;
-            if (strlen($templateSize) > 0) {
+            if ($templateSize > 0) {
                 $ret['size'] = $templateSize;
                 $ret['tpl'] = $data;
             }
@@ -85,11 +84,10 @@ class Fingerprint
         $count = 0;
         foreach ($data as $finger => $item) {
             $allowSet = true;
-            $fingerPrint = new Fingerprint();
-            if ($fingerPrint->_checkFinger($self, $uid, $finger) === true) {
-                $allowSet = $fingerPrint->_removeFinger($self, $uid, $finger);
+            if (self::_checkFinger($self, $uid, $finger) === true) {
+                $allowSet = self::_removeFinger($self, $uid, $finger);
             }
-            if ($allowSet === true && $fingerPrint->_setFinger($self, $item) === true) {
+            if ($allowSet === true && self::_setFinger($self, $item) === true) {
                 $count++;
             }
         }
@@ -102,7 +100,7 @@ class Fingerprint
      * @param string $data Binary fingerprint data item
      * @return bool|mixed
      */
-    private function _setFinger(ZKTeco $self, $data)
+    private static function _setFinger(ZKTeco $self, $data)
     {
         $command = Util::CMD_USER_TEMP_WRQ;
         $command_string = $data;
@@ -122,9 +120,8 @@ class Fingerprint
 
         $count = 0;
         foreach ($data as $finger) {
-          $fingerPrint = new Fingerprint();
-            if ($fingerPrint->_checkFinger($self, $uid, $finger) === true) {
-                if ($fingerPrint->_removeFinger($self, $uid, $finger) === true) {
+            if (self::_checkFinger($self, $uid, $finger) === true) {
+                if (self::_removeFinger($self, $uid, $finger) === true) {
                     $count++;
                 }
             }
@@ -139,7 +136,7 @@ class Fingerprint
      * @param int $finger Finger ID (0-9)
      * @return bool
      */
-    private function _removeFinger(ZKTeco $self, $uid, $finger)
+    private static function _removeFinger(ZKTeco $self, $uid, $finger)
     {
         $command = Util::CMD_DELETE_USER_TEMP;
         $byte1 = chr((int)($uid % 256));
@@ -147,8 +144,7 @@ class Fingerprint
         $command_string = ($byte1 . $byte2) . chr($finger);
 
         $self->_command($command, $command_string);
-        $fingerPrint = new Fingerprint();
-        return !($fingerPrint->_checkFinger($self, $uid, $finger));
+        return !self::_checkFinger($self, $uid, $finger);
     }
 
     /**
@@ -157,10 +153,9 @@ class Fingerprint
      * @param int $finger Finger ID (0-9)
      * @return bool Returned true if exist
      */
-    private function _checkFinger(ZKTeco $self, $uid, $finger)
+    private static function _checkFinger(ZKTeco $self, $uid, $finger)
     {
-      $fingerPrint = new Fingerprint();
-        $res = $fingerPrint->_getFinger($self, $uid, $finger);
+        $res = self::_getFinger($self, $uid, $finger);
         return (bool)($res['size'] > 0);
     }
 }

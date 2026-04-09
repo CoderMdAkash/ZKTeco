@@ -34,7 +34,14 @@ class User
         $command = Util::CMD_SET_USER;
         $byte1 = chr((int)($uid % 256));
         $byte2 = chr((int)($uid >> 8));
-        $cardno = hex2bin(Util::reverseHex(dechex($cardno)));
+        $cardHex = dechex((int)$cardno);
+        if (strlen($cardHex) % 2 !== 0) {
+            $cardHex = '0' . $cardHex;
+        }
+        $cardno = hex2bin(Util::reverseHex($cardHex));
+        if ($cardno === false) {
+            $cardno = '';
+        }
 
         $command_string = implode('', [
             $byte1,
